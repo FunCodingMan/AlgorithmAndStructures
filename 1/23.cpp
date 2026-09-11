@@ -47,7 +47,7 @@ void printTopPupils(const vector<Pupil>& pupils)
 	{
 		if (pupil.marksSum < minScore)
 			break;
-		cout << pupil.surname << " " << pupil.name << "\n";
+		cout << pupil.surname << " " << pupil.name << " " << pupil.marksSum << "\n";
 	}
 }
 
