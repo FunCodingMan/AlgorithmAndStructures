@@ -16,8 +16,11 @@ COS, EXP.  Переменные  заданы одной строчной лат
 #include <iostream>
 #include <string>
 #include <vector>
+#include <stack>
 
 using namespace std;
+
+const int NUMBER_OF_VARIABLES = 26;
 
 struct Expression
 {
@@ -25,7 +28,13 @@ struct Expression
 	string formula;
 };
 
-vector<string> parseTokens(string expression)
+struct Variable
+{
+	int val;
+	bool isExist;
+};
+
+vector<string> ParseTokens(string expression)
 {
 	vector<string> tokens;
 	string temp = "";
@@ -42,6 +51,15 @@ vector<string> parseTokens(string expression)
 		}
 	}
 	return tokens;
+}
+
+void Initialize(Variable vars[NUMBER_OF_VARIABLES])
+{
+	for (int i = 0; i <= NUMBER_OF_VARIABLES; ++i)
+	{
+		vars[i].val = 0.0;
+		vars[i].isExist = false;
+	}
 }
 
 int main(int argc, char* argv[])
@@ -65,11 +83,16 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
+	stack<int> numbers;
+	stack<Expression> expressions;
+	Variable vars[NUMBER_OF_VARIABLES];
+
+
 	string expression;
 
 	if (getline(cin, expression))
 	{
-		vector<string> tokens = parseTokens(expression);
+		vector<string> tokens = ParseTokens(expression);
 	}
 	
 	return 0;
