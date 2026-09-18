@@ -1,1 +1,1 @@
-x x SIN * ~
+x y + z ~ * a EXP / b c ^ SIN - x COS y z - / + a b + -
