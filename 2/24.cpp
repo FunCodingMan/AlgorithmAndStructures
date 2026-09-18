@@ -1,6 +1,6 @@
 /*
-Условие: Имеется  выражение  в  постфиксной  форме,   включающее 
-операции '+', '-', '*', '/', '^', ~ (одноместный минус),  SIN, 
+Условие: Имеется  выражение  в  постфиксной  форме,   включающее
+операции '+', '-', '*', '/', '^', ~ (одноместный минус),  SIN,
 COS, EXP.  Переменные  заданы одной строчной латинской буквой.
 Запросить значения переменных и вычислить выражение. Представить
 его в инфиксной форме со скобками. Лишние скобки присутствовать
@@ -13,10 +13,13 @@ COS, EXP.  Переменные  заданы одной строчной лат
 Источники информации: https://coddy.tech/docs/ru/cpp
 */
 
+#include "MyStack.h"
+#include <cmath>
+#include <fstream>
 #include <iostream>
+#include <stack>
 #include <string>
 #include <vector>
-#include <stack>
 
 using namespace std;
 
@@ -24,28 +27,60 @@ const int NUMBER_OF_VARIABLES = 26;
 
 struct Expression
 {
-	int val;
+	double val;
 	string formula;
+	int priority;
 };
 
 struct Variable
 {
-	int val;
+	double val;
 	bool isExist;
 };
+
+bool IsVariable(const string& token)
+{
+	return token.length() == 1 && token[0] >= 'a' && token[0] <= 'z';
+}
+
+bool IsBinaryOperation(const string& token)
+{
+	return token == "+" || token == "-" || token == "*" || token == "/" || token == "^";
+}
+
+bool IsUnaryOperation(const string& token)
+{
+	return token == "~" || token == "SIN" || token == "COS" || token == "EXP";
+}
+
+int GetPriority(const string& operation)
+{
+	if (operation == "+" || operation == "-")
+		return 1;
+	if (operation == "*" || operation == "/")
+		return 2;
+	if (operation == "^")
+		return 3;
+	if (operation == "~")
+		return 4;
+	if (operation == "SIN" || operation == "COS" || operation == "EXP")
+		return 5;
+	return 6;
+}
 
 vector<string> ParseTokens(string expression)
 {
 	vector<string> tokens;
 	string temp = "";
-	for (char ch: expression)
+	for (char ch : expression)
 	{
 		if (ch == ' ' && !temp.empty())
-		{	
+		{
 			tokens.push_back(temp);
 			cout << temp << "\n";
 			temp.clear();
-		} else
+		}
+		else
 		{
 			temp += ch;
 		}
@@ -53,47 +88,223 @@ vector<string> ParseTokens(string expression)
 	return tokens;
 }
 
-void Initialize(Variable vars[NUMBER_OF_VARIABLES])
+void ProcessVariable(const string& token, Variable vars[], MyStack<Expression>& stack)
 {
-	for (int i = 0; i <= NUMBER_OF_VARIABLES; ++i)
+	int idx = token[0] - 'a';
+	if (!vars[idx].isExist)
+	{
+		cout << "Введите значение переменной '" << token << "': ";
+		cin >> vars[idx].val;
+		vars[idx].isExist = true;
+	}
+
+	Expression exp;
+	exp.val = vars[idx].val;
+	exp.formula = token;
+	exp.priority = 6;
+
+	stack.push(exp);
+}
+
+void ProcessBinaryOperation(const string& operation, MyStack<Expression>& stack)
+{
+	Expression right = stack.pop();
+	Expression left = stack.pop();
+
+	double resVal = 0;
+	int curPriority = GetPriority(operation);
+
+	if (operation == "+")
+		resVal = left.val + right.val;
+	else if (operation == "-")
+		resVal = left.val - right.val;
+	else if (operation == "*")
+		resVal = left.val * right.val;
+	else if (operation == "/")
+	{
+		if (right.val == 0)
+			throw runtime_error("Деление на ноль!");
+		resVal = left.val / right.val;
+	}
+	else if (operation == "^")
+		resVal = pow(left.val, right.val);
+
+	if (left.priority < curPriority || (left.priority == curPriority && operation == "^"))
+	{
+		left.formula = "(" + left.formula + ")";
+	}
+	if (right.priority < curPriority || (right.priority == curPriority && (operation == "-" || operation == "/")))
+	{
+		right.formula = "(" + right.formula + ")";
+	}
+
+	Expression res;
+	res.val = resVal;
+	res.formula = left.formula + " " + operation + " " + right.formula;
+	res.priority = curPriority;
+
+	stack.push(res);
+}
+
+void ProcessUnaryOperation(const string& operation, MyStack<Expression>& stack)
+{
+	Expression expr = stack.pop();
+
+	double resVal = 0;
+	string resFormula = "";
+	int curPriority = GetPriority(operation);
+
+	if (operation == "~")
+	{
+		resVal = -expr.val;
+		if (expr.priority < 4)
+		{
+			expr.formula = "(" + expr.formula + ")";
+		}
+		resFormula = "~" + expr.formula;
+	}
+	else if (operation == "SIN")
+	{
+		resVal = sin(expr.val);
+		resFormula = "SIN(" + expr.formula + ")";
+	}
+	else if (operation == "COS")
+	{
+		resVal = cos(expr.val);
+		resFormula = "COS(" + expr.formula + ")";
+	}
+	else if (operation == "EXP")
+	{
+		resVal = exp(expr.val);
+		resFormula = "EXP(" + expr.formula + ")";
+	}
+
+	Expression res;
+	res.val = resVal;
+	res.formula = resFormula;
+	res.priority = curPriority;
+
+	stack.push(res);
+}
+
+void ProcessToken(const string& token, Variable vars[], MyStack<Expression>& stack)
+{
+	if (IsVariable(token))
+	{
+		ProcessVariable(token, vars, stack);
+	}
+	else if (IsBinaryOperation(token))
+	{
+		ProcessBinaryOperation(token, stack);
+	}
+	else if (IsUnaryOperation(token))
+	{
+		ProcessUnaryOperation(token, stack);
+	}
+	else
+	{
+		throw runtime_error("Неизвестный символ: '" + token + "'");
+	}
+}
+
+void Initialize(Variable vars[])
+{
+	for (int i = 0; i < NUMBER_OF_VARIABLES; ++i)
 	{
 		vars[i].val = 0.0;
 		vars[i].isExist = false;
 	}
 }
 
-int main(int argc, char* argv[])
+void PrintFinalResult(MyStack<Expression>& stack)
 {
-	if (argc < 3)
+	Expression res = stack.pop();
+	if (!stack.isEmpty())
 	{
-		cerr << "Error: missing parametres!\n";
-		cerr << "Use: " << argv[0] << " <input file> <output file>\n";
-		return 1;
+		cout << "Ошибка: в файле некорректное выражение! Остались лишние операнды!\n";
+		return;
+	}
+	cout << "\n-------------------------------\n";
+	cout << "Инфиксная форма: " << res.formula << endl;
+	cout << "Результат: " << res.val << endl;
+	cout << "-------------------------------\n";
+}
+
+void ProcessFile(const string& filename, Variable vars[])
+{
+	ifstream file(filename);
+	if (!file.is_open())
+	{
+		cout << "Ошибка: не удалось открыть файл " << filename << endl;
+		return;
 	}
 
-	if (freopen(argv[1], "r", stdin) == nullptr)
+	Initialize(vars);
+
+	MyStack<Expression> stack;
+	string token;
+	bool hasData = false;
+
+	cout << "\nЧтение файла...\n";
+	try
 	{
-		cerr << "Error: failed to open the file '" << argv[1] << "'!\n";
-		return 1;
+		while (file >> token)
+		{
+			hasData = true;
+			ProcessToken(token, vars, stack);
+		}
+
+		if (!hasData)
+		{
+			cout << "Файл пуст!\n";
+		}
+		else
+		{
+			PrintFinalResult(stack);
+		}
+	}
+	catch (const exception& e)
+	{
+		cout << "Ошибка выражения: " << e.what() << endl;
 	}
 
-	if (freopen(argv[2], "w", stdout) == nullptr)
-	{
-		cerr << "Error: failed to open/create the file '" << argv[2] << "'!\n";
-		return 1;
-	}
+	file.close();
+}
 
-	stack<int> numbers;
-	stack<Expression> expressions;
+void Loop()
+{
+	int choice = -1;
+	string filename;
 	Variable vars[NUMBER_OF_VARIABLES];
 
-
-	string expression;
-
-	if (getline(cin, expression))
+	cout << "Лабораторная работа 2. Задание 24.\n";
+	do
 	{
-		vector<string> tokens = ParseTokens(expression);
-	}
-	
+		cout << "Меню:\n";
+		cout << "1. Обработать выражение из файла\n";
+		cout << "0. Выход из программы\n";
+		cout << "Ваш выбор: ";
+
+		cin >> choice;
+
+		switch (choice)
+		{
+		case 1:
+			cout << "Введите имя файла: ";
+			cin >> filename;
+			ProcessFile(filename, vars);
+			break;
+		case 0:
+			cout << "Завершение работы\n";
+			break;
+		default:
+			cout << "Неверный пункт меню! Попробуйте снова.\n";
+		}
+	} while (choice != 0);
+}
+
+int main()
+{
+	Loop();
 	return 0;
 }
