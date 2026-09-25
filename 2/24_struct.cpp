@@ -13,7 +13,6 @@ COS, EXP.  Переменные  заданы одной строчной латинской буквой.
 Источники информации: https://coddy.tech/docs/ru/cpp
 */
 
-#include "MyStack.h"
 #include <cmath>
 #include <fstream>
 #include <iostream>
@@ -38,6 +37,51 @@ struct Variable
 	double val;
 	bool isExist;
 };
+
+struct Stack
+{
+    Expression val;
+    Stack* next;
+};
+
+void StackInit(Stack*& top)
+{
+    top = nullptr;
+}
+
+void Push(Stack*& top, Expression e)
+{
+    Stack* node = new Stack;
+    node->val = e;
+    node->next = top;
+    top = node;
+}
+
+Expression Pop(Stack*& top)
+{
+    if (top == nullptr)
+    {
+        throw std::runtime_error("Стек пуст!");
+    }
+    Expression e = top->val;
+    Stack* old = top;
+    top = top->next;
+    delete old;
+    return e;
+}
+
+bool StackIsEmpty(Stack* stack)
+{
+    return stack == nullptr;
+}
+
+void StackDestroy(Stack*& top)
+{
+    while (top != nullptr)
+    {
+        Pop(top);
+    }
+}
 
 bool IsVariable(const string& token)
 {
@@ -69,27 +113,7 @@ int GetPriority(const string& operation)
 	return 6;
 }
 
-vector<string> ParseTokens(string expression)
-{
-	vector<string> tokens;
-	string temp = "";
-	for (char ch : expression)
-	{
-		if (ch == ' ' && !temp.empty())
-		{
-			tokens.push_back(temp);
-			cout << temp << "\n";
-			temp.clear();
-		}
-		else
-		{
-			temp += ch;
-		}
-	}
-	return tokens;
-}
-
-void ProcessVariable(const string& token, Variable vars[], MyStack<Expression>& stack)
+void ProcessVariable(const string& token, Variable vars[], Stack*& stack)
 {
 	int idx = token[0] - 'a';
 	if (!vars[idx].isExist)
@@ -104,13 +128,13 @@ void ProcessVariable(const string& token, Variable vars[], MyStack<Expression>& 
 	exp.formula = token;
 	exp.priority = 6;
 
-	stack.push(exp);
+	Push(stack, exp);
 }
 
-void ProcessBinaryOperation(const string& operation, MyStack<Expression>& stack)
+void ProcessBinaryOperation(const string& operation, Stack*& stack)
 {
-	Expression right = stack.pop();
-	Expression left = stack.pop();
+	Expression right = Pop(stack);
+	Expression left = Pop(stack);
 
 	double resVal = 0;
 	int curPriority = GetPriority(operation);
@@ -134,7 +158,7 @@ void ProcessBinaryOperation(const string& operation, MyStack<Expression>& stack)
 	{
 		left.formula = "(" + left.formula + ")";
 	}
-	if (right.priority < curPriority || (right.priority == curPriority && (operation == "-" || operation == "/")))
+	if (right.priority < curPriority || (right.priority == curPriority && (operation == "-" || operation == "/")) || right.priority == 4)
 	{
 		right.formula = "(" + right.formula + ")";
 	}
@@ -144,12 +168,12 @@ void ProcessBinaryOperation(const string& operation, MyStack<Expression>& stack)
 	res.formula = left.formula + " " + operation + " " + right.formula;
 	res.priority = curPriority;
 
-	stack.push(res);
+	Push(stack, res);
 }
 
-void ProcessUnaryOperation(const string& operation, MyStack<Expression>& stack)
+void ProcessUnaryOperation(const string& operation, Stack*& stack)
 {
-	Expression expr = stack.pop();
+	Expression expr = Pop(stack);
 
 	double resVal = 0;
 	string resFormula = "";
@@ -162,7 +186,7 @@ void ProcessUnaryOperation(const string& operation, MyStack<Expression>& stack)
 		{
 			expr.formula = "(" + expr.formula + ")";
 		}
-		resFormula = "~" + expr.formula;
+		resFormula = "-" + expr.formula;
 	}
 	else if (operation == "SIN")
 	{
@@ -185,10 +209,10 @@ void ProcessUnaryOperation(const string& operation, MyStack<Expression>& stack)
 	res.formula = resFormula;
 	res.priority = curPriority;
 
-	stack.push(res);
+	Push(stack, res);
 }
 
-void ProcessToken(const string& token, Variable vars[], MyStack<Expression>& stack)
+void ProcessToken(const string& token, Variable vars[], Stack*& stack)
 {
 	if (IsVariable(token))
 	{
@@ -217,10 +241,10 @@ void Initialize(Variable vars[])
 	}
 }
 
-void PrintFinalResult(MyStack<Expression>& stack)
+void PrintFinalResult(Stack*& stack)
 {
-	Expression res = stack.pop();
-	if (!stack.isEmpty())
+	Expression res = Pop(stack);
+	if (!StackIsEmpty(stack))
 	{
 		cout << "Ошибка: в файле некорректное выражение! Остались лишние операнды!\n";
 		return;
@@ -242,7 +266,7 @@ void ProcessFile(const string& filename, Variable vars[])
 
 	Initialize(vars);
 
-	MyStack<Expression> stack;
+	Stack* stack;
 	string token;
 	bool hasData = false;
 
@@ -262,6 +286,7 @@ void ProcessFile(const string& filename, Variable vars[])
 		else
 		{
 			PrintFinalResult(stack);
+            StackDestroy(stack);
 		}
 	}
 	catch (const exception& e)
