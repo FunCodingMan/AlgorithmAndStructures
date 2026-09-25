@@ -29,7 +29,7 @@ public:
     {
         if (isEmpty())
         {
-            throw std::out_of_range("РЎС‚РµРє РїСѓСЃС‚! РќРµРІРѕР·РјРѕР¶РЅРѕ РґРѕСЃС‚Р°С‚СЊ СЌР»РµРјРµРЅС‚!");
+            throw std::out_of_range("Стеку пуст! Невозможно достать элемент!");
         }
         Node<T>* nodeToRemove = head;
         T val = nodeToRemove->data;

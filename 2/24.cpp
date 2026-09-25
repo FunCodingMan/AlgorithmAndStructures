@@ -1,16 +1,16 @@
 /*
-РЈСЃР»РѕРІРёРµ: РРјРµРµС‚СЃСЏ  РІС‹СЂР°Р¶РµРЅРёРµ  РІ  РїРѕСЃС‚С„РёРєСЃРЅРѕР№  С„РѕСЂРјРµ,   РІРєР»СЋС‡Р°СЋС‰РµРµ
-РѕРїРµСЂР°С†РёРё '+', '-', '*', '/', '^', ~ (РѕРґРЅРѕРјРµСЃС‚РЅС‹Р№ РјРёРЅСѓСЃ),  SIN,
-COS, EXP.  РџРµСЂРµРјРµРЅРЅС‹Рµ  Р·Р°РґР°РЅС‹ РѕРґРЅРѕР№ СЃС‚СЂРѕС‡РЅРѕР№ Р»Р°С‚РёРЅСЃРєРѕР№ Р±СѓРєРІРѕР№.
-Р—Р°РїСЂРѕСЃРёС‚СЊ Р·РЅР°С‡РµРЅРёСЏ РїРµСЂРµРјРµРЅРЅС‹С… Рё РІС‹С‡РёСЃР»РёС‚СЊ РІС‹СЂР°Р¶РµРЅРёРµ. РџСЂРµРґСЃС‚Р°РІРёС‚СЊ
-РµРіРѕ РІ РёРЅС„РёРєСЃРЅРѕР№ С„РѕСЂРјРµ СЃРѕ СЃРєРѕР±РєР°РјРё. Р›РёС€РЅРёРµ СЃРєРѕР±РєРё РїСЂРёСЃСѓС‚СЃС‚РІРѕРІР°С‚СЊ
-РЅРµ РґРѕР»Р¶РЅС‹ (11).
+Условие: Имеется  выражение  в  постфиксной  форме,   включающее
+операции '+', '-', '*', '/', '^', ~ (одноместный минус),  SIN,
+COS, EXP.  Переменные  заданы одной строчной латинской буквой.
+Запросить значения переменных и вычислить выражение. Представить
+его в инфиксной форме со скобками. Лишние скобки присутствовать
+не должны (11).
 
-РђРІС‚РѕСЂ: РљР°РјР°Р»РѕРІ Р”Р°РЅРёР» РњР°СЂР°С‚РѕРІРёС‡
+Автор: Камалов Данил Маратович
 
-РЎСЂРµРґР° РІС‹РїРѕР»РЅРµРЅРёСЏ: Visual Studio Code, g++
+Среда выполнения: Visual Studio Code, g++
 
-РСЃС‚РѕС‡РЅРёРєРё РёРЅС„РѕСЂРјР°С†РёРё: https://coddy.tech/docs/ru/cpp
+Источники информации: https://coddy.tech/docs/ru/cpp
 */
 
 #include "MyStack.h"
@@ -20,6 +20,7 @@ COS, EXP.  РџРµСЂРµРјРµРЅРЅС‹Рµ  Р·Р°РґР°РЅС‹ РѕРґРЅРѕР№ СЃС‚СЂРѕС‡РЅРѕР№ Р»Р°С‚
 #include <stack>
 #include <string>
 #include <vector>
+#include <windows.h>
 
 using namespace std;
 
@@ -93,7 +94,7 @@ void ProcessVariable(const string& token, Variable vars[], MyStack<Expression>& 
 	int idx = token[0] - 'a';
 	if (!vars[idx].isExist)
 	{
-		cout << "Р’РІРµРґРёС‚Рµ Р·РЅР°С‡РµРЅРёРµ РїРµСЂРµРјРµРЅРЅРѕР№ '" << token << "': ";
+		cout << "Введите значение переменной '" << token << "': ";
 		cin >> vars[idx].val;
 		vars[idx].isExist = true;
 	}
@@ -123,7 +124,7 @@ void ProcessBinaryOperation(const string& operation, MyStack<Expression>& stack)
 	else if (operation == "/")
 	{
 		if (right.val == 0)
-			throw runtime_error("Р”РµР»РµРЅРёРµ РЅР° РЅРѕР»СЊ!");
+			throw runtime_error("Деление на ноль!");
 		resVal = left.val / right.val;
 	}
 	else if (operation == "^")
@@ -203,7 +204,7 @@ void ProcessToken(const string& token, Variable vars[], MyStack<Expression>& sta
 	}
 	else
 	{
-		throw runtime_error("РќРµРёР·РІРµСЃС‚РЅС‹Р№ СЃРёРјРІРѕР»: '" + token + "'");
+		throw runtime_error("Неизвестный символ: '" + token + "'");
 	}
 }
 
@@ -221,12 +222,12 @@ void PrintFinalResult(MyStack<Expression>& stack)
 	Expression res = stack.pop();
 	if (!stack.isEmpty())
 	{
-		cout << "РћС€РёР±РєР°: РІ С„Р°Р№Р»Рµ РЅРµРєРѕСЂСЂРµРєС‚РЅРѕРµ РІС‹СЂР°Р¶РµРЅРёРµ! РћСЃС‚Р°Р»РёСЃСЊ Р»РёС€РЅРёРµ РѕРїРµСЂР°РЅРґС‹!\n";
+		cout << "Ошибка: в файле некорректное выражение! Остались лишние операнды!\n";
 		return;
 	}
 	cout << "\n-------------------------------\n";
-	cout << "РРЅС„РёРєСЃРЅР°СЏ С„РѕСЂРјР°: " << res.formula << endl;
-	cout << "Р РµР·СѓР»СЊС‚Р°С‚: " << res.val << endl;
+	cout << "Инфиксная форма: " << res.formula << endl;
+	cout << "Результат: " << res.val << endl;
 	cout << "-------------------------------\n";
 }
 
@@ -235,7 +236,7 @@ void ProcessFile(const string& filename, Variable vars[])
 	ifstream file(filename);
 	if (!file.is_open())
 	{
-		cout << "РћС€РёР±РєР°: РЅРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ С„Р°Р№Р» " << filename << endl;
+		cout << "Ошибка: не удалось открыть файл " << filename << endl;
 		return;
 	}
 
@@ -245,7 +246,7 @@ void ProcessFile(const string& filename, Variable vars[])
 	string token;
 	bool hasData = false;
 
-	cout << "\nР§С‚РµРЅРёРµ С„Р°Р№Р»Р°...\n";
+	cout << "\nЧтение файла...\n";
 	try
 	{
 		while (file >> token)
@@ -256,7 +257,7 @@ void ProcessFile(const string& filename, Variable vars[])
 
 		if (!hasData)
 		{
-			cout << "Р¤Р°Р№Р» РїСѓСЃС‚!\n";
+			cout << "Файл пуст!\n";
 		}
 		else
 		{
@@ -265,7 +266,7 @@ void ProcessFile(const string& filename, Variable vars[])
 	}
 	catch (const exception& e)
 	{
-		cout << "РћС€РёР±РєР° РІС‹СЂР°Р¶РµРЅРёСЏ: " << e.what() << endl;
+		cout << "Ошибка выражения: " << e.what() << endl;
 	}
 
 	file.close();
@@ -277,34 +278,36 @@ void Loop()
 	string filename;
 	Variable vars[NUMBER_OF_VARIABLES];
 
-	cout << "Р›Р°Р±РѕСЂР°С‚РѕСЂРЅР°СЏ СЂР°Р±РѕС‚Р° 2. Р—Р°РґР°РЅРёРµ 24.\n";
+	cout << "Лабораторная работа 2. Задание 24.\n";
 	do
 	{
-		cout << "РњРµРЅСЋ:\n";
-		cout << "1. РћР±СЂР°Р±РѕС‚Р°С‚СЊ РІС‹СЂР°Р¶РµРЅРёРµ РёР· С„Р°Р№Р»Р°\n";
-		cout << "0. Р’С‹С…РѕРґ РёР· РїСЂРѕРіСЂР°РјРјС‹\n";
-		cout << "Р’Р°С€ РІС‹Р±РѕСЂ: ";
+		cout << "Меню:\n";
+		cout << "1. Обработать выражение из файла\n";
+		cout << "0. Выход из программы\n";
+		cout << "Ваш выбор: ";
 
 		cin >> choice;
 
 		switch (choice)
 		{
 		case 1:
-			cout << "Р’РІРµРґРёС‚Рµ РёРјСЏ С„Р°Р№Р»Р°: ";
+			cout << "Введите имя файла: ";
 			cin >> filename;
 			ProcessFile(filename, vars);
 			break;
 		case 0:
-			cout << "Р—Р°РІРµСЂС€РµРЅРёРµ СЂР°Р±РѕС‚С‹\n";
+			cout << "Завершение работы\n";
 			break;
 		default:
-			cout << "РќРµРІРµСЂРЅС‹Р№ РїСѓРЅРєС‚ РјРµРЅСЋ! РџРѕРїСЂРѕР±СѓР№С‚Рµ СЃРЅРѕРІР°.\n";
+			cout << "Неверный пункт меню! Попробуйте снова.\n";
 		}
 	} while (choice != 0);
 }
 
 int main()
 {
+	SetConsoleCP(1251);
+    SetConsoleOutputCP(1251);
 	Loop();
 	return 0;
 }
