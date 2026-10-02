@@ -1,0 +1,19 @@
+mkdir Documents
+mkdir Photos
+mkdir Downloads
+cd Documents
+touch report.txt
+touch notes.txt
+mkdir Work
+cd Work
+touch project.cpp
+cd ..
+cd ..
+rename Photos Images
+cp Documents/notes.txt Images
+mv Documents/report.txt Downloads
+rm Downloads
+save backup.txt
+rm Documents
+load backup.txt
+tree

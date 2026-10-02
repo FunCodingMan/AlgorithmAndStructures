@@ -1,0 +1,9 @@
+C:/
+    Documents/
+        notes.txt
+        Work/
+            project.cpp
+    Photos/
+    Downloads/
+        report.txt
+    Images/
