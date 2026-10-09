@@ -40,17 +40,18 @@ class FileTree
             std::ifstream in(filename);
             if (!in) return false;
 
-            delete root;
-            root = nullptr;
-
+            MyTreeNode* newRoot = nullptr;
             std::string line;
             std::vector<std::pair<int, MyTreeNode*>> stack;
 
             while (std::getline(in, line))
             {
-                if (line.empty()) return false;
+                if (line.empty())
+                {
+                    delete newRoot;
+                    return false;
+                }
                 
-                int depth = 0;
                 int spaceCount = 0;
 
                 while (spaceCount < (int)line.size() && line[spaceCount] == ' ')
@@ -58,6 +59,7 @@ class FileTree
                     spaceCount++;
                 }
 
+                int depth = 0;
                 depth = spaceCount / 4;
 
                 std::string name = line.substr(spaceCount);
@@ -79,7 +81,13 @@ class FileTree
 
                 if (stack.empty())
                 {
-                    root = node;
+                    if (newRoot)
+                    {
+                        delete node;
+                        delete newRoot;
+                        return false;
+                    }
+                    newRoot = node;
                 }
                 else
                 {
@@ -87,8 +95,15 @@ class FileTree
                 }
                 stack.push_back({depth, node});
             }
-            return true;
 
+            if (!newRoot)
+            {
+                return false;
+            }
+
+            delete root;
+            root = newRoot;
+            return true;
         }
     private:
         static void saveRec(std::ofstream& out, MyTreeNode* node, int depth)

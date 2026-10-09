@@ -2,8 +2,14 @@ C:/
     Documents/
         notes.txt
         Work/
+        Photos/
             project.cpp
     Photos/
+        project.cpp
     Downloads/
         report.txt
+        game.zip
     Images/
+        smile.png
+        background.jpeg
+    System/

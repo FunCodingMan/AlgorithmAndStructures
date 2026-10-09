@@ -6,7 +6,7 @@
    2) обход дерева папок в  режиме  диалога  (раскрытие папок,
       подъем на уровень и т. п.); 
    3) корректировку  дерева при создании новых папок и файлов,
-их переименовании, копировании, переносе и удалении. 
+	  их переименовании, копировании, переносе и удалении. 
    4) сохранение дерева в файле (13).
 
 Автор: Камалов Данил Маратович
@@ -25,22 +25,25 @@
 
 using namespace std;
 
+const int COUNT_OF_SPACES_FOR_CLEAR_CONSOLE = 100;
+
 void printHelpInformation()
 {
-	cout << "Лабораторная работа. Задание 26 (Файловый менеджер).\n";
     cout << "Команды:\n";
-    cout << "  ls        - показать содержимое текущей папки\n";
-    cout << "  tree      - показать дерево файлов\n";
-    cout << "  cd <имя>  - перейти в папку (cd .. для возврата)\n";
-    cout << "  mkdir <и> - создать папку\n";
-    cout << "  touch <и> - создать файл\n";
-    cout << "  rm <имя>  - удалить файл/папку\n";
-    cout << "  rename <стар> <нов> - переименовать\n";
-    cout << "  cp <что> <куда> - копировать\n";
-    cout << "  mv <что> <куда> - переместить\n";
-    cout << "  save <ф>  - сохранить в файл\n";
-    cout << "  load <ф>  - загрузить из файла\n";
-    cout << "  exit      - выход\n\n";
+    cout << "  ls - показать содержимое текущей папки\n";
+    cout << "  tree - показать дерево файлов\n";
+    cout << "  cd <name> - перейти в папку (cd .. для возврата)\n";
+    cout << "  mkdir <name> - создать папку\n";
+    cout << "  touch <name> - создать файл\n";
+    cout << "  rm <name> - удалить файл/папку\n";
+    cout << "  rename <oldName> <newName> - переименовать\n";
+    cout << "  cp <source> <destination> - копировать\n";
+    cout << "  mv <source> <destination> - переместить\n";
+    cout << "  save <filename>  - сохранить в файл\n";
+    cout << "  load <filename>  - загрузить из файла\n";
+	cout << "  help - список основых комманд \n";
+	cout << "  help - очистка \n";
+    cout << "  exit - выход\n";
 }
 
 void printListOfChildrens(MyTreeNode* node)
@@ -114,7 +117,7 @@ void ChangeDirectory(MyTreeNode*& node, const string& arg)
 	else
 	{
 		MyTreeNode* temp = recFindChild(node, arg);
-		if (temp->isFolder())
+		if (temp && temp->isFolder())
 		{
 			node = temp;
 		}
@@ -276,6 +279,14 @@ void LoadTree(FileTree& tree, MyTreeNode*& node, string& filename)
 	cout << "Успешно загружено!\n";	
 }
 
+void clearConsole()
+{
+	for (int i = 0; i < COUNT_OF_SPACES_FOR_CLEAR_CONSOLE; ++i)
+	{
+		cout << endl;
+	}
+}
+
 bool CommandManager(FileTree& tree, MyTreeNode*& node, string cmd, string arg1, string arg2)
 {
 	if (cmd == "exit")
@@ -330,6 +341,10 @@ bool CommandManager(FileTree& tree, MyTreeNode*& node, string cmd, string arg1, 
 	{
 		printHelpInformation();
 	}
+	else if (cmd == "clear")
+	{
+		clearConsole();
+	}
 	else
 	{
 		cout << "Неизвестная команда! Попробуйте команду help.\n";
@@ -344,6 +359,7 @@ void Loop()
     MyTreeNode* current = tree.getRoot();
     
 	printHelpInformation();
+	cout << endl;
 
 	string line;
 	while (true)
@@ -361,6 +377,7 @@ void Loop()
 		{
 			break;
 		}
+		cout << endl;
 	}
 
 
