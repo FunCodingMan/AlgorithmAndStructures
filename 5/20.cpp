@@ -1,17 +1,54 @@
+/*
+Условие:
+20. Имеются города с номерами от 1 до N и дороги между некоторыми 
+из них. По дороге можно ехать в любом направлении. Известно, какой 
+максимальный груз можно провезти по каждой из дорог. Нужно узнать, 
+какие максимальные грузы можно доставить из города 1 в остальные 
+города. Использовать при решении  бинарную кучу.  Запрещается 
+использование приоритетной очереди из C++.
+ВВОД из файла INPUT.TXT. Первая строка содержит количество городов N 
+и дорог M через пробел. В каждой из следующих M строк находится по 3
+числа. Первые два из них - i и j- задают дорогу, а третье Cij – ее
+грузоподъемность.
+ВЫВОД в файл OUTPUT.TXT. В i-й строке выводится значение максимального 
+груза, который может быть доставлен из города 1 до i+1-го города. 
+Таким образом, файл OUTPUT.TXT состоит из N-1 строки. Если в какой-либо 
+город пути нет, в соответствующей строке вывести -1.
+Ограничения: 2 <= N <= 5*10^4; 2 <= M <= 5*10^5; 0 <= Cij <= 5*10^5 (11).
+Пример
+Ввод
+5 6
+1 2 6
+1 5 7
+2 4 3
+5 4 1
+2 3 6
+4 3 1
+Вывод
+6
+6
+3
+7
+
+
+Автор: Камалов Данил Маратович
+Среда выполнения: Visual Studio Code, g++
+*/
+
 #include <iostream>
 #include <vector>
 #include <fstream>
 #include <string>
+#include <algorithm>
 #include <locale.h>
-#include <string>
 
+using namespace std;
 
 const int INF = 1e9;
 const int UNREACHABLE = -1;
 const int START_CITY = 1;
 const string DEFAULT_OUTPUT_FILE = "OUTPUT.TXT";
 
-using namespace std;
 
 struct Road {
     int from, to;   
@@ -189,42 +226,42 @@ void PrintAndSaveResults(const vector<int>& maxWeightCapacity, int countCities, 
 void Loop()
 {
     string filename;
-    cout << "=== РЎРёСЃС‚РµРјР° СЂР°СЃС‡РµС‚Р° РјР°РєСЃРёРјР°Р»СЊРЅРѕРіРѕ РіСЂСѓР·Р° (Р—Р°РґР°С‡Р° 20) ===" << endl;
+    cout << "=== Система расчета максимального груза (Задача 20) ===" << endl;
 
     while (true)
     {
-        cout << "\nР’РІРµРґРёС‚Рµ РёРјСЏ С„Р°Р№Р»Р° СЃ РґР°РЅРЅС‹РјРё (РЅР°РїСЂРёРјРµСЂ, INPUT.TXT РёР»Рё 'exit' РґР»СЏ РІС‹С…РѕРґР°): ";
+        cout << "\nВведите имя файла с данными (например, INPUT.TXT или 'exit' для выхода): ";
         cin >> filename;
 
         if (filename == "exit" || filename == "quit" || filename == "q")
         {
-            cout << "Р—Р°РІРµСЂС€РµРЅРёРµ СЂР°Р±РѕС‚С‹ РїСЂРѕРіСЂР°РјРјС‹." << endl;
+            cout << "Завершение работы программы." << endl;
             break;
         }
 
         ifstream fin(filename);
         if (!fin.is_open())
         {
-            cout << "РћС€РёР±РєР°: РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ С„Р°Р№Р» '" << filename << "'. РџСЂРѕРІРµСЂСЊС‚Рµ РїСѓС‚СЊ Рё РїРѕРІС‚РѕСЂРёС‚Рµ РїРѕРїС‹С‚РєСѓ." << endl;
+            cout << "Ошибка: Не удалось открыть файл '" << filename << "'. Проверьте путь и повторите попытку." << endl;
             continue;
         }
 
         int countCities, countRoads;
         if (!(fin >> countCities >> countRoads))
         {
-            cout << "РћС€РёР±РєР°: РќРµРІРµСЂРЅС‹Р№ С„РѕСЂРјР°С‚ РґР°РЅРЅС‹С… РІ С„Р°Р№Р»Рµ." << endl;
+            cout << "Ошибка: Неверный формат данных в файле." << endl;
             continue;
         }
 
         vector<vector<Road>> roads(countCities + 1);
         ReadRoads(roads, countRoads, fin);
 
-        vector<int> maxCargo;
-        // FindMaxCargo(countCities, roads, maxCargo);
+        vector<int> maxWeightCapacity;
+        FindMaxWeightCapacity(countCities, roads, maxWeightCapacity);
 
-        cout << "\n--- Р РµР·СѓР»СЊС‚Р°С‚ Р°РЅР°Р»РёР·Р° (С„Р°Р№Р»: " << filename << ") ---" << endl;
-        // PrintAndSaveResults(maxCargo, countCities, DEFAULT_OUTPUT_FILE);
-        // cout << "Р РµР·СѓР»СЊС‚Р°С‚ С‚Р°РєР¶Рµ СЃРѕС…СЂР°РЅРµРЅ РІ С„Р°Р№Р» " << DEFAULT_OUTPUT_FILE << endl;
+        cout << "\n--- Результат анализа (файл: " << filename << ") ---" << endl;
+        PrintAndSaveResults(maxWeightCapacity, countCities, DEFAULT_OUTPUT_FILE);
+        cout << "Результат т/акже сохранен в файл " << DEFAULT_OUTPUT_FILE << endl;
         cout << "-----------------------------------------------" << endl;
     }
 }
